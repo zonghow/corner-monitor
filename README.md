@@ -1,0 +1,28 @@
+# Corner Monitor（Tauri + React）
+
+一个贴在屏幕角落的系统监控小挂件，支持拖拽吸附、托盘配置与颜色/布局切换。
+
+## 功能
+
+- 角落监控：CPU / 内存 / 网络实时显示
+- 拖拽吸附：拖到任意屏幕后松开，自动吸附到最近角落（以屏幕边缘为基准）
+- 多屏支持：根据窗口所在屏幕自动吸附
+- 布局切换：右键点击窗口切换横/竖布局（托盘也可切换）
+- 颜色切换：托盘“颜色”菜单快速切换文字颜色
+
+## 运行与开发
+
+```bash
+# 安装依赖
+pnpm install
+
+# 启动开发
+pnpm tauri dev
+
+# 构建
+pnpm tauri build
+```
+
+## Recommended IDE Setup
+
+- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)

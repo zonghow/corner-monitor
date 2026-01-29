@@ -1,0 +1,35 @@
+html {
+  font-size: 10px;
+  font-family: Menlo;
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  /* border: 0.1px solid red; */
+  color: #fff;
+  padding-top: 3x;
+  padding-left: 3px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+}
+
+.layout-vertical {
+  display: block;
+}
+
+.layout-horizontal {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 10px;
+  row-gap: 2px;
+}
