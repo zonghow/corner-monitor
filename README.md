@@ -6,14 +6,25 @@
 
 ## 安装
 
+**使用 brew**
 ```bash
 brew install zonghow/homebrew-corner-monitor/corner-monitor
 ```
 
+**dmg 安装**
+
+[Releases Page](https://github.com/zonghow/corner-monitor/releases) 下载最新的安装包
+
+然后在终端运行脚本后打开
+```bash
+xattr -cr /Applications/Corner\ Monitor.app/
+```
+
+
 ## 卸载
 
 ```bash
-brew uninstall zonghow/homebrew-corner-monitor/corner-monitor
+brew uninstall corner-monitor
 ```
 
 ## 功能
