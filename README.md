@@ -4,6 +4,18 @@
 
 <img width="890" height="714" alt="CleanShot 2026-02-02 at 14 48 11@2x" src="https://github.com/user-attachments/assets/b823bf93-2dc6-419a-9dbd-0543e0b1a149" />
 
+## 安装
+
+```bash
+brew install zonghow/homebrew-corner-monitor/corner-monitor
+```
+
+## 卸载
+
+```bash
+brew uninstall zonghow/homebrew-corner-monitor/corner-monitor
+```
+
 ## 功能
 
 - 角落监控：CPU / 内存 / 网络实时显示
