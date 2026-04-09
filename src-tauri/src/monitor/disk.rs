@@ -8,6 +8,22 @@ pub struct DiskCollector {
     disks: Disks,
 }
 
+fn mount_point_priority(mount_point: &str) -> u8 {
+    match mount_point {
+        "/System/Volumes/Data" => 2,
+        "/" => 1,
+        _ => 0,
+    }
+}
+
+fn select_primary_disk(disks: &[DiskDetail]) -> Option<&DiskDetail> {
+    let has_non_removable = disks.iter().any(|disk| !disk.is_removable);
+
+    disks.iter()
+        .filter(|disk| !has_non_removable || !disk.is_removable)
+        .max_by_key(|disk| (disk.total, mount_point_priority(&disk.mount_point)))
+}
+
 impl DiskCollector {
     /// 创建新的磁盘采集器
     pub fn new() -> Self {
@@ -20,9 +36,6 @@ impl DiskCollector {
         self.disks.refresh(true);
 
         let mut disk_details: Vec<DiskDetail> = Vec::new();
-        let mut total: u64 = 0;
-        let mut total_used: u64 = 0;
-        let mut total_available: u64 = 0;
 
         for disk in self.disks.iter() {
             let disk_total = disk.total_space();
@@ -50,19 +63,19 @@ impl DiskCollector {
                 is_removable: disk.is_removable(),
             };
 
-            // 累加总量（只计算非可移除磁盘或有意义的磁盘）
-            total += disk_total;
-            total_used += disk_used;
-            total_available += disk_available;
-
             disk_details.push(detail);
         }
 
-        let total_usage_percent = if total > 0 {
-            (total_used as f32 / total as f32) * 100.0
-        } else {
-            0.0
-        };
+        let (total, total_used, total_available, total_usage_percent) = select_primary_disk(&disk_details)
+            .map(|disk| {
+                (
+                    disk.total,
+                    disk.used,
+                    disk.available,
+                    disk.usage_percent,
+                )
+            })
+            .unwrap_or((0, 0, 0, 0.0));
 
         DiskInfo {
             disks: disk_details,
@@ -77,5 +90,62 @@ impl DiskCollector {
 impl Default for DiskCollector {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn make_disk_detail(
+        name: &str,
+        mount_point: &str,
+        total: u64,
+        available: u64,
+        is_removable: bool,
+    ) -> DiskDetail {
+        let used = total.saturating_sub(available);
+        let usage_percent = if total > 0 {
+            (used as f32 / total as f32) * 100.0
+        } else {
+            0.0
+        };
+
+        DiskDetail {
+            name: name.to_string(),
+            mount_point: mount_point.to_string(),
+            file_system: "apfs".to_string(),
+            total,
+            used,
+            available,
+            usage_percent,
+            is_removable,
+        }
+    }
+
+    #[test]
+    fn selects_data_volume_instead_of_summing_apfs_volumes() {
+        let disks = vec![
+            make_disk_detail("Macintosh HD", "/", 494_000_000_000, 120_000_000_000, false),
+            make_disk_detail(
+                "Macintosh HD - Data",
+                "/System/Volumes/Data",
+                494_000_000_000,
+                120_000_000_000,
+                false,
+            ),
+            make_disk_detail(
+                "Preboot",
+                "/System/Volumes/Preboot",
+                20_000_000_000,
+                15_000_000_000,
+                false,
+            ),
+        ];
+
+        let selected = select_primary_disk(&disks).expect("expected primary disk");
+
+        assert_eq!(selected.mount_point, "/System/Volumes/Data");
+        assert_eq!(selected.total, 494_000_000_000);
     }
 }

@@ -38,6 +38,9 @@ const formatPercent = (value: number) => `${value.toFixed(2)}%`;
 const formatGB = (value: number, digits: number) =>
   `${(value / 1024 / 1024 / 1024).toFixed(digits)}`;
 
+const formatDiskGB = (value: number, digits: number) =>
+  `${(value / 1000 / 1000 / 1000).toFixed(digits)}`;
+
 const formatNetSpeed = (bytesPerSec: number) => {
   const bitsPerSec = bytesPerSec * 8;
   if (bitsPerSec < 1_000) {
@@ -262,7 +265,7 @@ function App() {
           <b>Disk</b>
           <div>{formatPercent(stats.diskUsage)}</div>
           <div>
-            {formatGB(stats.diskUsed, 1)}/{formatGB(stats.diskTotal, 0)}
+            {formatDiskGB(stats.diskUsed, 1)}/{formatDiskGB(stats.diskTotal, 0)}
           </div>
         </div>
       )}

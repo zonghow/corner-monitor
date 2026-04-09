@@ -1,6 +1,6 @@
 [package]
 name = "corner-monitor"
-version = "0.0.2"
+version = "0.0.3"
 description = "A performance monitor placed in the corner of the screen."
 authors = ["you"]
 edition = "2021"
