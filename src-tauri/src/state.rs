@@ -19,6 +19,7 @@ pub enum Layout {
 pub enum MonitorItem {
     Cpu,
     Mem,
+    Disk,
     Net,
 }
 
@@ -30,6 +31,7 @@ pub struct UiState {
     pub text_color: String,
     pub show_cpu: bool,
     pub show_mem: bool,
+    pub show_disk: bool,
     pub show_net: bool,
 }
 
@@ -40,9 +42,10 @@ pub const KEY_MONITOR_TARGET: &str = "monitor_target";
 pub const KEY_TEXT_COLOR: &str = "text_color";
 pub const KEY_MONITOR_CPU: &str = "monitor_cpu";
 pub const KEY_MONITOR_MEM: &str = "monitor_mem";
+pub const KEY_MONITOR_DISK: &str = "monitor_disk";
 pub const KEY_MONITOR_NET: &str = "monitor_net";
-pub const SIZE_HORIZONTAL: LogicalSize<f64> = LogicalSize::new(190.0, 40.0);
-pub const SIZE_VERTICAL: LogicalSize<f64> = LogicalSize::new(75.0, 100.0);
+pub const SIZE_HORIZONTAL: LogicalSize<f64> = LogicalSize::new(250.0, 40.0);
+pub const SIZE_VERTICAL: LogicalSize<f64> = LogicalSize::new(75.0, 130.0);
 pub type SettingsStore = Arc<tauri_plugin_store::Store<Wry>>;
 
 impl Default for UiState {
@@ -54,6 +57,7 @@ impl Default for UiState {
             text_color: "#ffffff".to_string(),
             show_cpu: true,
             show_mem: true,
+            show_disk: true,
             show_net: true,
         }
     }
@@ -97,6 +101,7 @@ pub fn position_from_str(value: &str) -> Option<WindowPosition> {
 pub struct MonitorVisibility {
     pub cpu: bool,
     pub mem: bool,
+    pub disk: bool,
     pub net: bool,
 }
 
@@ -213,6 +218,7 @@ pub fn visibility_from_state(state: &UiState) -> MonitorVisibility {
     MonitorVisibility {
         cpu: state.show_cpu,
         mem: state.show_mem,
+        disk: state.show_disk,
         net: state.show_net,
     }
 }

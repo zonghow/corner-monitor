@@ -1,5 +1,7 @@
 use std::sync::Mutex;
 
+use std::process::Command;
+
 use tauri::{Emitter, Manager};
 
 use crate::monitor::{Monitor, SystemInfo};
@@ -39,6 +41,7 @@ pub fn get_monitor_visibility(state: tauri::State<'_, Mutex<UiState>>) -> Monito
         .unwrap_or(MonitorVisibility {
             cpu: true,
             mem: true,
+            disk: true,
             net: true,
         })
 }
@@ -56,6 +59,16 @@ pub fn snap_window(app: tauri::AppHandle) -> Result<(), String> {
     if let Some(window) = app.get_webview_window("main") {
         snap_window_to_nearest_corner(&app, &window).map_err(|error| error.to_string())?;
     }
+    Ok(())
+}
+
+#[tauri::command]
+pub fn open_activity_monitor() -> Result<(), String> {
+    Command::new("open")
+        .arg("-a")
+        .arg("Activity Monitor")
+        .spawn()
+        .map_err(|e| e.to_string())?;
     Ok(())
 }
 

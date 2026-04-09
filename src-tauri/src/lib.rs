@@ -14,13 +14,14 @@ use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_store::StoreBuilder;
 
 use crate::commands::{
-    get_layout, get_monitor_visibility, get_system_info, get_text_color, greet, snap_window,
-    toggle_layout,
+    get_layout, get_monitor_visibility, get_system_info, get_text_color, greet, open_activity_monitor,
+    snap_window, toggle_layout,
 };
 use crate::state::{
     layout_from_str, layout_to_str, position_from_str, position_to_str, primary_monitor_target,
-    visibility_from_state, UiState, KEY_LAYOUT, KEY_MONITOR_CPU, KEY_MONITOR_MEM, KEY_MONITOR_NET,
-    KEY_MONITOR_TARGET, KEY_POSITION, KEY_TEXT_COLOR, SETTINGS_PATH,
+    visibility_from_state, UiState, KEY_LAYOUT, KEY_MONITOR_CPU, KEY_MONITOR_DISK,
+    KEY_MONITOR_MEM, KEY_MONITOR_NET, KEY_MONITOR_TARGET, KEY_POSITION, KEY_TEXT_COLOR,
+    SETTINGS_PATH,
 };
 use crate::tray::setup_tray;
 use crate::window::apply_layout_and_position;
@@ -79,12 +80,17 @@ pub fn run() {
                     ui_state.show_mem = value;
                 }
             }
+            if let Some(value) = store.get(KEY_MONITOR_DISK) {
+                if let Some(value) = value.as_bool() {
+                    ui_state.show_disk = value;
+                }
+            }
             if let Some(value) = store.get(KEY_MONITOR_NET) {
                 if let Some(value) = value.as_bool() {
                     ui_state.show_net = value;
                 }
             }
-            if !(ui_state.show_cpu || ui_state.show_mem || ui_state.show_net) {
+            if !(ui_state.show_cpu || ui_state.show_mem || ui_state.show_disk || ui_state.show_net) {
                 ui_state.show_cpu = true;
             }
             store.set(KEY_POSITION, position_to_str(ui_state.position).to_string());
@@ -95,6 +101,7 @@ pub fn run() {
             }
             store.set(KEY_MONITOR_CPU, ui_state.show_cpu);
             store.set(KEY_MONITOR_MEM, ui_state.show_mem);
+            store.set(KEY_MONITOR_DISK, ui_state.show_disk);
             store.set(KEY_MONITOR_NET, ui_state.show_net);
             app.manage(store);
             app.manage(Mutex::new(ui_state.clone()));
@@ -103,7 +110,7 @@ pub fn run() {
                 MonitorConfig::new()
                     .cpu_interval(Duration::from_secs(1))
                     .memory_interval(Duration::from_secs(1))
-                    .disk_interval(Duration::from_secs(30))
+                    .disk_interval(Duration::from_secs(10))
                     .network_interval(Duration::from_secs(1)),
             );
             monitor.refresh_all();
@@ -137,7 +144,8 @@ pub fn run() {
             get_monitor_visibility,
             get_text_color,
             snap_window,
-            toggle_layout
+            toggle_layout,
+            open_activity_monitor
         ])
         .on_window_event(|window, event| match event {
             WindowEvent::Resized(_) | WindowEvent::ScaleFactorChanged { .. } => {

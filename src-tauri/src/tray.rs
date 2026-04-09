@@ -10,9 +10,9 @@ use tauri_plugin_autostart::ManagerExt as AutoLaunchManagerExt;
 use crate::state::{
     layout_to_str, monitor_target_from_monitor, monitor_target_to_str, position_to_str,
     visibility_from_state, Layout, MonitorItem, MonitorVisibility, SettingsStore, UiState,
-    WindowPosition, COLOR_OPTIONS, KEY_LAYOUT, KEY_MONITOR_CPU, KEY_MONITOR_MEM,
-    KEY_MONITOR_NET, KEY_MONITOR_TARGET, KEY_POSITION, KEY_TEXT_COLOR, SIZE_HORIZONTAL,
-    SIZE_VERTICAL,
+    WindowPosition, COLOR_OPTIONS, KEY_LAYOUT, KEY_MONITOR_CPU, KEY_MONITOR_DISK,
+    KEY_MONITOR_MEM, KEY_MONITOR_NET, KEY_MONITOR_TARGET, KEY_POSITION, KEY_TEXT_COLOR,
+    SIZE_HORIZONTAL, SIZE_VERTICAL,
 };
 use crate::window::{
     apply_window_position, calculate_window_position_on_monitor, monitor_for_window, nearest_corner,
@@ -30,6 +30,7 @@ pub struct TrayMenuItems {
     color_items: Vec<ColorMenuItem>,
     monitor_cpu: CheckMenuItem<Wry>,
     monitor_mem: CheckMenuItem<Wry>,
+    monitor_disk: CheckMenuItem<Wry>,
     monitor_net: CheckMenuItem<Wry>,
 }
 
@@ -76,6 +77,7 @@ impl TrayMenuItems {
     pub fn set_monitor_visibility(&self, visibility: MonitorVisibility) {
         let _ = self.monitor_cpu.set_checked(visibility.cpu);
         let _ = self.monitor_mem.set_checked(visibility.mem);
+        let _ = self.monitor_disk.set_checked(visibility.disk);
         let _ = self.monitor_net.set_checked(visibility.net);
     }
 }
@@ -153,20 +155,23 @@ pub fn update_monitor_visibility(app: &tauri::AppHandle, item: MonitorItem, tray
     if let Ok(mut state) = app.state::<Mutex<UiState>>().lock() {
         let mut cpu = state.show_cpu;
         let mut mem = state.show_mem;
+        let mut disk = state.show_disk;
         let mut net = state.show_net;
         match item {
             MonitorItem::Cpu => cpu = !cpu,
             MonitorItem::Mem => mem = !mem,
+            MonitorItem::Disk => disk = !disk,
             MonitorItem::Net => net = !net,
         }
 
-        if !(cpu || mem || net) {
+        if !(cpu || mem || disk || net) {
             tray.set_monitor_visibility(visibility_from_state(&state));
             return;
         }
 
         state.show_cpu = cpu;
         state.show_mem = mem;
+        state.show_disk = disk;
         state.show_net = net;
         next = Some(visibility_from_state(&state));
     }
@@ -176,6 +181,7 @@ pub fn update_monitor_visibility(app: &tauri::AppHandle, item: MonitorItem, tray
         let store = app.state::<SettingsStore>();
         store.set(KEY_MONITOR_CPU, visibility.cpu);
         store.set(KEY_MONITOR_MEM, visibility.mem);
+        store.set(KEY_MONITOR_DISK, visibility.disk);
         store.set(KEY_MONITOR_NET, visibility.net);
         let _ = app.emit("monitor-visibility-changed", visibility);
     }
@@ -310,6 +316,14 @@ pub fn setup_tray(app: &tauri::AppHandle, ui_state: &UiState) -> tauri::Result<T
         ui_state.show_mem,
         None::<&str>,
     )?;
+    let monitor_disk = CheckMenuItem::with_id(
+        app,
+        "monitor_disk",
+        "Disk",
+        true,
+        ui_state.show_disk,
+        None::<&str>,
+    )?;
     let monitor_net = CheckMenuItem::with_id(
         app,
         "monitor_net",
@@ -330,6 +344,7 @@ pub fn setup_tray(app: &tauri::AppHandle, ui_state: &UiState) -> tauri::Result<T
         color_items: color_items.clone(),
         monitor_cpu: monitor_cpu.clone(),
         monitor_mem: monitor_mem.clone(),
+        monitor_disk: monitor_disk.clone(),
         monitor_net: monitor_net.clone(),
     };
 
@@ -354,6 +369,7 @@ pub fn setup_tray(app: &tauri::AppHandle, ui_state: &UiState) -> tauri::Result<T
     let monitor_menu = SubmenuBuilder::new(app, "监控")
         .item(&monitor_cpu)
         .item(&monitor_mem)
+        .item(&monitor_disk)
         .item(&monitor_net)
         .build()?;
 
@@ -433,6 +449,9 @@ pub fn setup_tray(app: &tauri::AppHandle, ui_state: &UiState) -> tauri::Result<T
                     }
                     "monitor_mem" => {
                         update_monitor_visibility(app, MonitorItem::Mem, &tray_items);
+                    }
+                    "monitor_disk" => {
+                        update_monitor_visibility(app, MonitorItem::Disk, &tray_items);
                     }
                     "monitor_net" => {
                         update_monitor_visibility(app, MonitorItem::Net, &tray_items);

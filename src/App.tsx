@@ -14,6 +14,11 @@ type SystemInfo = {
     used: number;
     usage_percent: number;
   };
+  disk: {
+    total: number;
+    total_used: number;
+    total_usage_percent: number;
+  };
   network: {
     total_upload_speed: number;
     total_download_speed: number;
@@ -24,6 +29,7 @@ type SystemInfo = {
 type MonitorVisibility = {
   cpu: boolean;
   mem: boolean;
+  disk: boolean;
   net: boolean;
 };
 
@@ -52,6 +58,7 @@ function App() {
   const [visibility, setVisibility] = useState<MonitorVisibility>({
     cpu: true,
     mem: true,
+    disk: true,
     net: true,
   });
   const [stats, setStats] = useState({
@@ -60,6 +67,9 @@ function App() {
     memUsage: 0,
     memUsed: 0,
     memTotal: 0,
+    diskUsage: 0,
+    diskUsed: 0,
+    diskTotal: 0,
     netUp: 0,
     netDown: 0,
   });
@@ -77,6 +87,9 @@ function App() {
           memUsage: info.memory.usage_percent ?? 0,
           memUsed: info.memory.used ?? 0,
           memTotal: info.memory.total ?? 0,
+          diskUsage: info.disk.total_usage_percent ?? 0,
+          diskUsed: info.disk.total_used ?? 0,
+          diskTotal: info.disk.total ?? 0,
           netUp: info.network.total_upload_speed ?? 0,
           netDown: info.network.total_download_speed ?? 0,
         });
@@ -193,9 +206,11 @@ function App() {
       }
       return;
     }
-    getCurrentWindow().startDragging().catch((error) => {
-      console.error("Failed to start dragging", error);
-    });
+    getCurrentWindow()
+      .startDragging()
+      .catch((error) => {
+        console.error("Failed to start dragging", error);
+      });
   };
 
   const handleMouseUp = (event: React.MouseEvent<HTMLDivElement>) => {
@@ -207,6 +222,12 @@ function App() {
     });
   };
 
+  const handleDoubleClick = () => {
+    invoke("open_activity_monitor").catch((error) => {
+      console.error("Failed to open Activity Monitor", error);
+    });
+  };
+
   return (
     <div
       className={
@@ -215,6 +236,7 @@ function App() {
       style={{ color: textColor }}
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
+      onDoubleClick={handleDoubleClick}
       onContextMenu={(event) => event.preventDefault()}
     >
       {visibility.cpu && (
@@ -232,6 +254,15 @@ function App() {
           <div>{formatPercent(stats.memUsage)}</div>
           <div>
             {formatGB(stats.memUsed, 1)}/{formatGB(stats.memTotal, 0)}
+          </div>
+        </div>
+      )}
+      {visibility.disk && (
+        <div>
+          <b>Disk</b>
+          <div>{formatPercent(stats.diskUsage)}</div>
+          <div>
+            {formatGB(stats.diskUsed, 1)}/{formatGB(stats.diskTotal, 0)}
           </div>
         </div>
       )}
