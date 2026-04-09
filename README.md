@@ -1,6 +1,6 @@
 # Corner Monitor（Tauri + React）
 
-一个贴在屏幕角落的系统监控小挂件，支持拖拽吸附、托盘配置与颜色/布局切换。
+一个贴在屏幕角落的系统监控小挂件，支持 CPU / 内存 / 磁盘 / 网络监控、拖拽吸附、托盘配置与颜色/布局切换。
 
 <img width="890" height="714" alt="CleanShot 2026-02-02 at 14 48 11@2x" src="https://github.com/user-attachments/assets/b823bf93-2dc6-419a-9dbd-0543e0b1a149" />
 
@@ -26,10 +26,11 @@ xattr -cr /Applications/Corner\ Monitor.app/
 
 ## 功能
 
-- 角落监控：CPU / 内存 / 网络实时显示
+- 角落监控：CPU / 内存 / 磁盘 / 网络实时显示
 - 拖拽吸附：拖到任意屏幕后松开，自动吸附到最近角落（以屏幕边缘为基准）
 - 多屏支持：根据窗口所在屏幕自动吸附
 - 布局切换：右键点击窗口切换横/竖布局（托盘也可切换）
+- 快捷操作：双击窗口打开 macOS Activity Monitor
 - 颜色切换：托盘“颜色”菜单快速切换文字颜色
 
 ## 运行与开发
